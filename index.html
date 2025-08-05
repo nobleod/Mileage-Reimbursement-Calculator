@@ -92,10 +92,10 @@
       value = value.trim().toLowerCase();
       if (value.endsWith('mi')) {
         const miles = parseFloat(value.replace('mi', ''));
-        if (!isNaN(miles)) return +(miles * 1.60934).toFixed(2);
+        if (!isNaN(miles)) return Math.round(miles * 1.60934);
       }
       const num = parseFloat(value);
-      return isNaN(num) ? null : +num.toFixed(2);
+      return isNaN(num) ? null : Math.round(num);
     }
 
     function autoCalculate() {
@@ -103,25 +103,22 @@
       const endVal = toKM(endInput.value);
       const totalVal = toKM(totalInput.value);
 
-      // Determine which fields are filled
       const hasStart = startVal !== null;
       const hasEnd = endVal !== null;
       const hasTotal = totalVal !== null;
 
-      // Logic based on valid pairs
       if (hasEnd && hasTotal && (!hasStart || startInput === document.activeElement)) {
-        const newStart = (endVal - totalVal).toFixed(2);
+        const newStart = Math.round(endVal - totalVal);
         startInput.value = newStart;
       } else if (hasStart && hasTotal && (!hasEnd || endInput === document.activeElement)) {
-        const newEnd = (startVal + totalVal).toFixed(2);
+        const newEnd = Math.round(startVal + totalVal);
         endInput.value = newEnd;
       } else if (hasStart && hasEnd && (!hasTotal || totalInput === document.activeElement)) {
-        const newTotal = (endVal - startVal).toFixed(2);
+        const newTotal = Math.round(endVal - startVal);
         totalInput.value = newTotal;
       }
     }
 
-    // Convert mi → km and trigger recalculation
     [startInput, endInput, totalInput].forEach(input => {
       input.addEventListener('input', () => {
         const km = toKM(input.value);
