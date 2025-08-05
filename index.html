@@ -55,12 +55,6 @@
       box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
     }
 
-    .note {
-      font-size: 12px;
-      color: #888;
-      margin-top: 5px;
-    }
-
     h2 {
       text-align: center;
       margin-bottom: 30px;
@@ -96,12 +90,10 @@
     function toKM(value) {
       if (!value) return null;
       value = value.trim().toLowerCase();
-
       if (value.endsWith('mi')) {
         const miles = parseFloat(value.replace('mi', ''));
         if (!isNaN(miles)) return +(miles * 1.60934).toFixed(2);
       }
-
       const num = parseFloat(value);
       return isNaN(num) ? null : +num.toFixed(2);
     }
@@ -111,33 +103,27 @@
       const endVal = toKM(endInput.value);
       const totalVal = toKM(totalInput.value);
 
-      // Only update fields that are empty or contain "mi"
-      const startNeedsUpdate = (!startInput.value.trim() || startInput.value.toLowerCase().includes('mi'));
-      const endNeedsUpdate = (!endInput.value.trim() || endInput.value.toLowerCase().includes('mi'));
-      const totalNeedsUpdate = (!totalInput.value.trim() || totalInput.value.toLowerCase().includes('mi'));
+      // Determine which fields are filled
+      const hasStart = startVal !== null;
+      const hasEnd = endVal !== null;
+      const hasTotal = totalVal !== null;
 
-      // Calculate END = START + TOTAL
-      if (startVal !== null && totalVal !== null && endNeedsUpdate) {
-        const result = (startVal + totalVal).toFixed(2);
-        endInput.value = result;
-      }
-
-      // Calculate START = END - TOTAL
-      else if (endVal !== null && totalVal !== null && startNeedsUpdate) {
-        const result = (endVal - totalVal).toFixed(2);
-        startInput.value = result;
-      }
-
-      // Calculate TOTAL = END - START
-      else if (startVal !== null && endVal !== null && totalNeedsUpdate) {
-        const result = (endVal - startVal).toFixed(2);
-        totalInput.value = result;
+      // Logic based on valid pairs
+      if (hasEnd && hasTotal && (!hasStart || startInput === document.activeElement)) {
+        const newStart = (endVal - totalVal).toFixed(2);
+        startInput.value = newStart;
+      } else if (hasStart && hasTotal && (!hasEnd || endInput === document.activeElement)) {
+        const newEnd = (startVal + totalVal).toFixed(2);
+        endInput.value = newEnd;
+      } else if (hasStart && hasEnd && (!hasTotal || totalInput === document.activeElement)) {
+        const newTotal = (endVal - startVal).toFixed(2);
+        totalInput.value = newTotal;
       }
     }
 
+    // Convert mi → km and trigger recalculation
     [startInput, endInput, totalInput].forEach(input => {
       input.addEventListener('input', () => {
-        // Convert miles to KM if needed
         const km = toKM(input.value);
         if (input.value.toLowerCase().includes('mi') && km !== null) {
           input.value = km;
