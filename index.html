@@ -92,10 +92,14 @@
       value = value.trim().toLowerCase();
       if (value.endsWith('mi')) {
         const miles = parseFloat(value.replace('mi', ''));
-        if (!isNaN(miles)) return Math.round(miles * 1.60934);
+        if (!isNaN(miles)) return +(miles * 1.60934);
       }
       const num = parseFloat(value);
-      return isNaN(num) ? null : Math.round(num);
+      return isNaN(num) ? null : +num;
+    }
+
+    function round(value) {
+      return Math.round(value);
     }
 
     function autoCalculate() {
@@ -108,14 +112,14 @@
       const hasTotal = totalVal !== null;
 
       if (hasEnd && hasTotal && (!hasStart || startInput === document.activeElement)) {
-        const newStart = Math.round(endVal - totalVal);
-        startInput.value = newStart;
+        const newStart = endVal - totalVal;
+        startInput.value = round(newStart);
       } else if (hasStart && hasTotal && (!hasEnd || endInput === document.activeElement)) {
-        const newEnd = Math.round(startVal + totalVal);
-        endInput.value = newEnd;
+        const newEnd = startVal + totalVal;
+        endInput.value = round(newEnd);
       } else if (hasStart && hasEnd && (!hasTotal || totalInput === document.activeElement)) {
-        const newTotal = Math.round(endVal - startVal);
-        totalInput.value = newTotal;
+        const newTotal = endVal - startVal;
+        totalInput.value = round(newTotal);
       }
     }
 
@@ -123,7 +127,7 @@
       input.addEventListener('input', () => {
         const km = toKM(input.value);
         if (input.value.toLowerCase().includes('mi') && km !== null) {
-          input.value = km;
+          input.value = round(km); // Display as rounded KM
         }
         autoCalculate();
       });
