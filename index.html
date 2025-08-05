@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KM Distance Calculator</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -18,7 +15,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .container {
       background: #fff;
       padding: 40px;
@@ -27,20 +23,22 @@
       max-width: 400px;
       width: 90%;
     }
-
     .field {
       margin-bottom: 25px;
       text-align: left;
     }
-
     label {
       display: block;
       font-weight: 600;
       margin-bottom: 6px;
       color: #333;
     }
-
-    input[type="text"] {
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="number"] {
       width: 100%;
       padding: 12px;
       font-size: 16px;
@@ -48,90 +46,145 @@
       border-radius: 8px;
       transition: 0.3s;
     }
-
-    input[type="text"]:focus {
+    select {
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+      background: #f9f9f9;
+    }
+    input[type="number"]:focus, select:focus {
       border-color: #007bff;
       outline: none;
       box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
     }
-
     h2 {
       text-align: center;
       margin-bottom: 30px;
       color: #222;
+    }
+    .error {
+      color: #d8000c;
+      font-size: 13px;
+      margin-top: 2px;
+      min-height: 16px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>KM Distance Calculator</h2>
-    
     <div class="field">
-      <label for="start">Start KM</label>
-      <input type="text" id="start" placeholder="Enter KM or miles (e.g. 10mi)" />
+      <label for="start">Start</label>
+      <div class="input-group">
+        <input type="number" id="start" placeholder="Enter start value" min="0" step="any" />
+        <select id="start-unit">
+          <option value="km">KM</option>
+          <option value="mi">Miles</option>
+        </select>
+      </div>
+      <div class="error" id="start-error"></div>
     </div>
 
     <div class="field">
-      <label for="end">End KM</label>
-      <input type="text" id="end" placeholder="Enter KM or miles (e.g. 10mi)" />
+      <label for="end">End</label>
+      <div class="input-group">
+        <input type="number" id="end" placeholder="Enter end value" min="0" step="any" />
+        <select id="end-unit">
+          <option value="km">KM</option>
+          <option value="mi">Miles</option>
+        </select>
+      </div>
+      <div class="error" id="end-error"></div>
     </div>
 
     <div class="field">
-      <label for="total">Total KM</label>
-      <input type="text" id="total" placeholder="Enter KM or miles (e.g. 10mi)" />
+      <label for="total">Total Distance</label>
+      <div class="input-group">
+        <input type="number" id="total" placeholder="Calculated automatically" readonly />
+        <span>KM</span>
+      </div>
+      <div class="error" id="total-error"></div>
     </div>
   </div>
-
   <script>
+    // Elements
     const startInput = document.getElementById('start');
     const endInput = document.getElementById('end');
     const totalInput = document.getElementById('total');
+    const startUnit = document.getElementById('start-unit');
+    const endUnit = document.getElementById('end-unit');
+    const startError = document.getElementById('start-error');
+    const endError = document.getElementById('end-error');
+    const totalError = document.getElementById('total-error');
 
-    function toKM(value) {
-      if (!value) return null;
-      value = value.trim().toLowerCase();
-      if (value.endsWith('mi')) {
-        const miles = parseFloat(value.replace('mi', ''));
-        if (!isNaN(miles)) return +(miles * 1.60934);
+    // Conversion
+    function toKM(value, unit) {
+      if (unit === 'mi') return value * 1.60934;
+      return value;
+    }
+
+    function isValidNumber(val) {
+      return typeof val === "number" && !isNaN(val) && val >= 0;
+    }
+
+    function showError(element, message) {
+      element.textContent = message || "";
+    }
+
+    function clearErrors() {
+      showError(startError, "");
+      showError(endError, "");
+      showError(totalError, "");
+    }
+
+    function calculate() {
+      clearErrors();
+      let startVal = parseFloat(startInput.value);
+      let endVal = parseFloat(endInput.value);
+      let valid = true;
+
+      // Validate
+      if (!startInput.value) {
+        showError(startError, "Please enter a starting value.");
+        valid = false;
+      } else if (!isValidNumber(startVal)) {
+        showError(startError, "Invalid number.");
+        valid = false;
       }
-      const num = parseFloat(value);
-      return isNaN(num) ? null : +num;
-    }
-
-    function round(value) {
-      return Math.round(value);
-    }
-
-    function autoCalculate() {
-      const startVal = toKM(startInput.value);
-      const endVal = toKM(endInput.value);
-      const totalVal = toKM(totalInput.value);
-
-      const hasStart = startVal !== null;
-      const hasEnd = endVal !== null;
-      const hasTotal = totalVal !== null;
-
-      if (hasEnd && hasTotal && (!hasStart || startInput === document.activeElement)) {
-        const newStart = endVal - totalVal;
-        startInput.value = round(newStart);
-      } else if (hasStart && hasTotal && (!hasEnd || endInput === document.activeElement)) {
-        const newEnd = startVal + totalVal;
-        endInput.value = round(newEnd);
-      } else if (hasStart && hasEnd && (!hasTotal || totalInput === document.activeElement)) {
-        const newTotal = endVal - startVal;
-        totalInput.value = round(newTotal);
+      if (!endInput.value) {
+        showError(endError, "Please enter an ending value.");
+        valid = false;
+      } else if (!isValidNumber(endVal)) {
+        showError(endError, "Invalid number.");
+        valid = false;
       }
+
+      if (!valid) {
+        totalInput.value = "";
+        return;
+      }
+
+      // Convert to KM
+      startVal = toKM(startVal, startUnit.value);
+      endVal = toKM(endVal, endUnit.value);
+
+      // Calculate
+      let total = endVal - startVal;
+      if (total < 0) {
+        showError(totalError, "End value must be greater than start value.");
+        totalInput.value = "";
+        return;
+      }
+      totalInput.value = Math.round(total * 100) / 100;
     }
 
-    [startInput, endInput, totalInput].forEach(input => {
-      input.addEventListener('input', () => {
-        const km = toKM(input.value);
-        if (input.value.toLowerCase().includes('mi') && km !== null) {
-          input.value = round(km); // Display as rounded KM
-        }
-        autoCalculate();
-      });
-    });
+    [startInput, endInput, startUnit, endUnit].forEach(el =>
+      el.addEventListener('input', calculate)
+    );
+    [startUnit, endUnit].forEach(el =>
+      el.addEventListener('change', calculate)
+    );
   </script>
 </body>
 </html>
