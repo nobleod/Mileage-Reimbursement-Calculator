@@ -3,42 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KM Calculator</title>
+  <title>KM Distance Calculator</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f1f1f1;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #ece9e6, #ffffff);
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
     }
 
     .container {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      text-align: center;
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 90%;
     }
 
     .field {
-      margin: 20px 0;
+      margin-bottom: 25px;
+      text-align: left;
     }
 
     label {
       display: block;
+      font-weight: 600;
       margin-bottom: 6px;
-      font-weight: bold;
+      color: #333;
     }
 
     input[type="text"] {
-      width: 200px;
-      padding: 10px;
+      width: 100%;
+      padding: 12px;
       font-size: 16px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      text-align: center;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
     }
 
     .note {
@@ -46,26 +60,31 @@
       color: #888;
       margin-top: 5px;
     }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #222;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <h2>KM Distance Calculator</h2>
+    
     <div class="field">
       <label for="start">Start KM</label>
-      <input type="text" id="start" placeholder="Enter KM or miles" />
-      <div class="note">Type miles with "mi" (e.g., 10mi)</div>
+      <input type="text" id="start" placeholder="Enter KM or miles (e.g. 10mi)" />
     </div>
 
     <div class="field">
       <label for="end">End KM</label>
-      <input type="text" id="end" placeholder="Enter KM or miles" />
-      <div class="note">Type miles with "mi" (e.g., 10mi)</div>
+      <input type="text" id="end" placeholder="Enter KM or miles (e.g. 10mi)" />
     </div>
 
     <div class="field">
       <label for="total">Total KM</label>
-      <input type="text" id="total" placeholder="Enter KM or miles" />
-      <div class="note">Type miles with "mi" (e.g., 10mi)</div>
+      <input type="text" id="total" placeholder="Enter KM or miles (e.g. 10mi)" />
     </div>
   </div>
 
@@ -80,45 +99,50 @@
 
       if (value.endsWith('mi')) {
         const miles = parseFloat(value.replace('mi', ''));
-        if (!isNaN(miles)) return (miles * 1.60934).toFixed(2);
+        if (!isNaN(miles)) return +(miles * 1.60934).toFixed(2);
       }
 
       const num = parseFloat(value);
-      return isNaN(num) ? null : num.toFixed(2);
+      return isNaN(num) ? null : +num.toFixed(2);
     }
 
-    function updateFields() {
+    function autoCalculate() {
       const startVal = toKM(startInput.value);
       const endVal = toKM(endInput.value);
       const totalVal = toKM(totalInput.value);
 
-      // Auto-calculate END if Start and Total are provided
-      if (startVal && totalVal && (!endInput.value || endInput.value.endsWith('mi'))) {
-        const end = (parseFloat(startVal) + parseFloat(totalVal)).toFixed(2);
-        endInput.value = end;
+      // Only update fields that are empty or contain "mi"
+      const startNeedsUpdate = (!startInput.value.trim() || startInput.value.toLowerCase().includes('mi'));
+      const endNeedsUpdate = (!endInput.value.trim() || endInput.value.toLowerCase().includes('mi'));
+      const totalNeedsUpdate = (!totalInput.value.trim() || totalInput.value.toLowerCase().includes('mi'));
+
+      // Calculate END = START + TOTAL
+      if (startVal !== null && totalVal !== null && endNeedsUpdate) {
+        const result = (startVal + totalVal).toFixed(2);
+        endInput.value = result;
       }
 
-      // Auto-calculate START if End and Total are provided
-      if (endVal && totalVal && (!startInput.value || startInput.value.endsWith('mi'))) {
-        const start = (parseFloat(endVal) - parseFloat(totalVal)).toFixed(2);
-        startInput.value = start;
+      // Calculate START = END - TOTAL
+      else if (endVal !== null && totalVal !== null && startNeedsUpdate) {
+        const result = (endVal - totalVal).toFixed(2);
+        startInput.value = result;
       }
 
-      // Auto-calculate TOTAL if Start and End are provided
-      if (startVal && endVal && (!totalInput.value || totalInput.value.endsWith('mi'))) {
-        const total = (parseFloat(endVal) - parseFloat(startVal)).toFixed(2);
-        totalInput.value = total;
+      // Calculate TOTAL = END - START
+      else if (startVal !== null && endVal !== null && totalNeedsUpdate) {
+        const result = (endVal - startVal).toFixed(2);
+        totalInput.value = result;
       }
     }
 
     [startInput, endInput, totalInput].forEach(input => {
       input.addEventListener('input', () => {
-        // If value contains 'mi', convert it
+        // Convert miles to KM if needed
         const km = toKM(input.value);
         if (input.value.toLowerCase().includes('mi') && km !== null) {
           input.value = km;
         }
-        updateFields();
+        autoCalculate();
       });
     });
   </script>
