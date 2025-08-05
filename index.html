@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KM Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .field {
+      margin: 20px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 200px;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="field">
+      <label for="start">Start KM</label>
+      <input type="text" id="start" placeholder="Enter KM or miles" />
+      <div class="note">Type miles with "mi" (e.g., 10mi)</div>
+    </div>
+
+    <div class="field">
+      <label for="end">End KM</label>
+      <input type="text" id="end" placeholder="Enter KM or miles" />
+      <div class="note">Type miles with "mi" (e.g., 10mi)</div>
+    </div>
+
+    <div class="field">
+      <label for="total">Total KM</label>
+      <input type="text" id="total" placeholder="Enter KM or miles" />
+      <div class="note">Type miles with "mi" (e.g., 10mi)</div>
+    </div>
+  </div>
+
+  <script>
+    const startInput = document.getElementById('start');
+    const endInput = document.getElementById('end');
+    const totalInput = document.getElementById('total');
+
+    function toKM(value) {
+      if (!value) return null;
+      value = value.trim().toLowerCase();
+
+      if (value.endsWith('mi')) {
+        const miles = parseFloat(value.replace('mi', ''));
+        if (!isNaN(miles)) return (miles * 1.60934).toFixed(2);
+      }
+
+      const num = parseFloat(value);
+      return isNaN(num) ? null : num.toFixed(2);
+    }
+
+    function updateFields() {
+      const startVal = toKM(startInput.value);
+      const endVal = toKM(endInput.value);
+      const totalVal = toKM(totalInput.value);
+
+      // Auto-calculate END if Start and Total are provided
+      if (startVal && totalVal && (!endInput.value || endInput.value.endsWith('mi'))) {
+        const end = (parseFloat(startVal) + parseFloat(totalVal)).toFixed(2);
+        endInput.value = end;
+      }
+
+      // Auto-calculate START if End and Total are provided
+      if (endVal && totalVal && (!startInput.value || startInput.value.endsWith('mi'))) {
+        const start = (parseFloat(endVal) - parseFloat(totalVal)).toFixed(2);
+        startInput.value = start;
+      }
+
+      // Auto-calculate TOTAL if Start and End are provided
+      if (startVal && endVal && (!totalInput.value || totalInput.value.endsWith('mi'))) {
+        const total = (parseFloat(endVal) - parseFloat(startVal)).toFixed(2);
+        totalInput.value = total;
+      }
+    }
+
+    [startInput, endInput, totalInput].forEach(input => {
+      input.addEventListener('input', () => {
+        // If value contains 'mi', convert it
+        const km = toKM(input.value);
+        if (input.value.toLowerCase().includes('mi') && km !== null) {
+          input.value = km;
+        }
+        updateFields();
+      });
+    });
+  </script>
+</body>
+</html>
