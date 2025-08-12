@@ -94,9 +94,9 @@
       return isNaN(km) ? null : km;
     }
 
-    // Format number to whole number string
-    function formatRounded(num) {
-      return isNaN(num) ? '' : Math.round(num).toString();
+    // Format number to 2 decimal places
+    function formatValue(num) {
+      return isNaN(num) ? '' : num.toFixed(2);
     }
 
     function calculate() {
@@ -109,15 +109,15 @@
       if (startVal != null && endVal != null && active !== totalInput) {
         // Calculate total
         const total = endVal - startVal;
-        totalInput.value = formatRounded(total);
+        totalInput.value = formatValue(total);
       } else if (startVal != null && totalVal != null && active !== endInput) {
         // Calculate end
         const end = startVal + totalVal;
-        endInput.value = formatRounded(end);
+        endInput.value = formatValue(end);
       } else if (endVal != null && totalVal != null && active !== startInput) {
         // Calculate start
         const start = endVal - totalVal;
-        startInput.value = formatRounded(start);
+        startInput.value = formatValue(start);
       }
     }
 
